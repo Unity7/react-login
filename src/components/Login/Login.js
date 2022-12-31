@@ -18,7 +18,7 @@ const emailReducer = (state, action) => {
 
 const passwordReducer = (state, action) => {
   if (action.type === "USER_INPUT") {
-    return { value: action.val, isValid: action.val.includes("@") };
+    return { value: action.val, isValid: action.val.trim().length > 6 };
   }
 
   if (action.type === "INPUT_BLUR") {
@@ -26,6 +26,8 @@ const passwordReducer = (state, action) => {
   }
   return { value: "", isValid: false };
 };
+
+//start of component
 const Login = (props) => {
   // const [enteredEmail, setEnteredEmail] = useState("");
   // const [emailIsValid, setEmailIsValid] = useState();
@@ -41,19 +43,24 @@ const Login = (props) => {
 
   const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
     value: "",
-    isValid: false,
+    isValid: null,
   });
 
+  //use object destructuring to create alias for specific properties to passed as a dependency instead of the entire object.
+  const { isValid: emailIsValid } = emailState;
+  const { isValid: passwordIsValid } = passwordState;
+
+  //useEffect
   useEffect(() => {
     const identifier = setTimeout(() => {
-      setFormIsValid(emailState.isValid && passwordState.isValid);
+      setFormIsValid(emailIsValid && passwordIsValid);
     }, 500);
 
     //return statement in useEffect is ran after component unmounts, it does not run when page is init
     return () => {
       clearTimeout(identifier);
     };
-  }, [emailState, passwordState]);
+  }, [emailIsValid, passwordIsValid]);
 
   const emailChangeHandler = (event) => {
     dispatchEmail({ type: "USER_INPUT", val: event.target.value });
@@ -95,7 +102,7 @@ const Login = (props) => {
         </div>
         <div
           className={`${classes.control} ${
-            emailState.isValid === false ? classes.invalid : ""
+            passwordState.isValid === false ? classes.invalid : ""
           }`}
         >
           <label htmlFor="password">Password</label>
